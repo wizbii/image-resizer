@@ -327,5 +327,5 @@ exports.parse = function(query){
     }
   }
 
-  return limitMaxDimension(mods, env);
+  return limitMaxDimension(mods, environment);
 };
