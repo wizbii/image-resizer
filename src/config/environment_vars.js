@@ -30,7 +30,7 @@ vars = {
   MAX_IMAGE_DIMENSION: null,
 
   // Color used when padding an image with the 'pad' crop modifier.
-  IMAGE_PADDING_COLOR: 'white',
+  IMAGE_PADDING_COLOR: {red: 0, green: 0, blue: 0, alpha: 0},
 
   // Optimization options
   IMAGE_PROGRESSIVE: true,
