@@ -16,29 +16,16 @@ function contentLength(bufs){
   }, 0);
 }
 
-function External(image, key, prefix){
-  var regexMatch;
-
-  /* jshint validthis:true */
-  if (!(this instanceof External)){
-    return new External(image, key, prefix);
-  }
-  stream.Readable.call(this, { objectMode : true });
-  this.image = image;
+function External(url){
+  this.url = url;
   this.ended = false;
-  this.key = key;
-  if ((regexMatch = prefix.match(string.REGEX_LITERAL_REGEX)) !== null) {
-    this.pattern = new RegExp(regexMatch[1], regexMatch[2]);
-  } else {
-    this.prefix = prefix;
-  }
+  stream.Readable.call(this, { objectMode : true });
 }
 
 util.inherits(External, stream.Readable);
 
 External.prototype._read = function(){
   var _this = this,
-    url,
     imgStream,
     bufs = [];
 
@@ -51,23 +38,10 @@ External.prototype._read = function(){
     return this.push(null);
   }
 
-  if (this.pattern) {
-    url = this.image.path;
-
-    if (!this.pattern.test(url)) {
-      this.image.error = new Error('URL "' + url + '" does not match pattern');
-      this.ended = true;
-      this.push(this.image);
-      return this.push(null);
-    }
-  } else {
-    url = this.prefix + '/' + this.image.path;
-  }
-
   this.image.log.time('source:' + this.key);
 
   var options = {
-    url: url,
+    url: this.url,
     headers: {
       'User-Agent': env.USER_AGENT
     }

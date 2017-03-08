@@ -74,8 +74,11 @@ Image.prototype.isBuffer = function(){
 
 
 Image.prototype.getFile = function(){
-  var sources = require('./streams/sources'),
-      excludes = env.EXCLUDE_SOURCES ? env.EXCLUDE_SOURCES.split(',') : [],
+  var sources = require('./streams/sources');
+  Stream = sources.external;
+  return new Stream(this, this.modifiers.external, env.externalSources[this.modifiers.external]);
+
+  var excludes = env.EXCLUDE_SOURCES ? env.EXCLUDE_SOURCES.split(',') : [],
       streamType = env.DEFAULT_SOURCE,
       Stream = null;
 

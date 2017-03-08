@@ -60,7 +60,7 @@ function createApplicationAt(dir){
     dependencies: {
       'chalk': pkg.dependencies.chalk,
       'express': pkg.dependencies.express,
-      'image-resizer': 'tripviss/image-resizer#v' + pkg.version,
+      'image-resizer': 'wizbii/image-resizer',
       'lodash': pkg.dependencies.lodash,
       'sharp': pkg.dependencies.sharp
     },
