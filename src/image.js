@@ -75,35 +75,8 @@ Image.prototype.isBuffer = function(){
 
 Image.prototype.getFile = function(){
   var sources = require('./streams/sources');
-  Stream = sources.external;
-  return new Stream(this, this.modifiers.external, env.externalSources[this.modifiers.external]);
-
-  var excludes = env.EXCLUDE_SOURCES ? env.EXCLUDE_SOURCES.split(',') : [],
-      streamType = env.DEFAULT_SOURCE,
-      Stream = null;
-
-  // look to see if the request has a specified source
-  if (_.has(this.modifiers, 'external')){
-    if (_.has(sources, this.modifiers.external)){
-      streamType = this.modifiers.external;
-    } else if (_.has(env.externalSources, this.modifiers.external)) {
-      Stream = sources.external;
-      return new Stream(this, this.modifiers.external, env.externalSources[this.modifiers.external]);
-    }
-  }
-
-  // if this request is for an excluded source create an ErrorStream
-  if (excludes.indexOf(streamType) > -1){
-    this.error = new Error(streamType + ' is an excluded source');
-    Stream = ErrorStream;
-  }
-
-  // if all is well find the appropriate stream
-  else {
-    Stream = sources[streamType];
-  }
-
-  return new Stream(this);
+  var Stream = sources.external;
+  return new Stream(this, this.image);
 };
 
 

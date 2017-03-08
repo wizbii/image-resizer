@@ -16,9 +16,11 @@ function contentLength(bufs){
   }, 0);
 }
 
-function External(url){
+function External(image, url){
+  console.log("constructor", url);
   this.url = url;
   this.ended = false;
+  this.image = image;
   stream.Readable.call(this, { objectMode : true });
 }
 
@@ -39,7 +41,7 @@ External.prototype._read = function(){
   }
 
   this.image.log.time('source:' + this.key);
-
+  console.log(this.url);
   var options = {
     url: this.url,
     headers: {

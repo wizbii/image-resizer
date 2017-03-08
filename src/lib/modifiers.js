@@ -309,7 +309,8 @@ exports.parse = function(query){
   if (mods.action === 'square'){
     // make sure crop is set to the default
     mods.crop = 'fill';
-    return limitMaxDimension(mods, env);
+    console.log(environment);
+    return limitMaxDimension(mods, environment);
   }
 
   if (mods.height !== null || mods.width !== null){
