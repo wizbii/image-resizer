@@ -158,12 +158,11 @@ if (fs.existsSync(process.cwd() + '/named_modifiers.json')){
 
 
 // Take an array of modifiers and parse the keys and values into mods hash
-function parseModifiers(mods, modArr) {
-  var key, value, mod;
+function parseModifiers(query, mods) {
+  var value, mod;
 
-  _.each(modArr, function(item){
-    key = item[0];
-    value = item.slice(1);
+  Object.keys(query || {}).forEach(function (key) {
+    value = query[key];
 
     if (inArray(key, modKeys)){
 
@@ -175,71 +174,71 @@ function parseModifiers(mods, modArr) {
       var dimensionLimit = 16383;
 
       switch(mod.desc){
-      case 'height':
-        mods.height = string.sanitize(value);
-        if (mods.height > dimensionLimit) {
-          mods.height = dimensionLimit;
-        }
-        mods.hasModStr = true;
-        break;
-      case 'width':
-        mods.width = string.sanitize(value);
-        if (mods.width > dimensionLimit) {
-          mods.width = dimensionLimit;
-        }
-        mods.hasModStr = true;
-        break;
-      case 'square':
-        mods.action = 'square';
-        mods.height = string.sanitize(value);
-        mods.width = string.sanitize(value);
-        mods.hasModStr = true;
-        break;
-      case 'gravity':
-        value = string.sanitize(value, 'alpha');
-        if (inArray(value.toLowerCase(), mod.values)){
-          mods.gravity = value.toLowerCase();
-        }
-        mods.hasModStr = true;
-        break;
-      case 'top':
-        mods.y = string.sanitize(value);
-        mods.hasModStr = true;
-        break;
-      case 'left':
-        mods.x = string.sanitize(value);
-        mods.hasModStr = true;
-        break;
-      case 'crop':
-        value = string.sanitize(value, 'alpha');
-        if (inArray(value.toLowerCase(), mod.values)){
-          mods.crop = value.toLowerCase();
-        }
-        mods.hasModStr = true;
-        break;
-      case 'external':
-        value = string.sanitize(value, 'alphanumeric');
-        if (inArray(value.toLowerCase(), mod.values)){
-          mods.external = value.toLowerCase();
-        }
-        mods.hasModStr = true;
-        break;
-      case 'filter':
-        value = string.sanitize(value, 'alpha');
-        if (inArray(value.toLowerCase(), mod.values)){
-          mods.filter = value.toLowerCase();
-        }
-        mods.hasModStr = true;
-        break;
-      case 'quality':
-        value = string.sanitize(value);
-        if(!isNaN(value)) {
-          var min = mod.range[0],
-            max = mod.range[1];
-          mods.quality = Math.max(min, Math.min(max, value));
-        }
-        mods.hasModStr = true;
-        break;
+        case 'height':
+          mods.height = string.sanitize(value);
+          if (mods.height > dimensionLimit) {
+            mods.height = dimensionLimit;
+          }
+          mods.hasModStr = true;
+          break;
+        case 'width':
+          mods.width = string.sanitize(value);
+          if (mods.width > dimensionLimit) {
+            mods.width = dimensionLimit;
+          }
+          mods.hasModStr = true;
+          break;
+        case 'square':
+          mods.action = 'square';
+          mods.height = string.sanitize(value);
+          mods.width = string.sanitize(value);
+          mods.hasModStr = true;
+          break;
+        case 'gravity':
+          value = string.sanitize(value, 'alpha');
+          if (inArray(value.toLowerCase(), mod.values)){
+            mods.gravity = value.toLowerCase();
+          }
+          mods.hasModStr = true;
+          break;
+        case 'top':
+          mods.y = string.sanitize(value);
+          mods.hasModStr = true;
+          break;
+        case 'left':
+          mods.x = string.sanitize(value);
+          mods.hasModStr = true;
+          break;
+        case 'crop':
+          value = string.sanitize(value, 'alpha');
+          if (inArray(value.toLowerCase(), mod.values)){
+            mods.crop = value.toLowerCase();
+          }
+          mods.hasModStr = true;
+          break;
+        case 'external':
+          value = string.sanitize(value, 'alphanumeric');
+          if (inArray(value.toLowerCase(), mod.values)){
+            mods.external = value.toLowerCase();
+          }
+          mods.hasModStr = true;
+          break;
+        case 'filter':
+          value = string.sanitize(value, 'alpha');
+          if (inArray(value.toLowerCase(), mod.values)){
+            mods.filter = value.toLowerCase();
+          }
+          mods.hasModStr = true;
+          break;
+        case 'quality':
+          value = string.sanitize(value);
+          if(!isNaN(value)) {
+            var min = mod.range[0],
+                max = mod.range[1];
+            mods.quality = Math.max(min, Math.min(max, value));
+          }
+          mods.hasModStr = true;
+          break;
       }
 
     }
@@ -287,24 +286,12 @@ var limitMaxDimension = function(mods, env){
 // Exposed method to parse an incoming URL for modifiers, can add a map of
 // named (preset) modifiers if need be (mostly just for unit testing). Named
 // modifiers are usually added via config json file in root of application.
-exports.parse = function(requestUrl, namedMods, envOverride){
-  // override 'env' for testing
-  if(typeof envOverride !== 'undefined'){
-    env = _.clone(envOverride);
-  } else {
-    env = _.clone(environment);
-  }
-
-  var segments, mods, modStr, image, gravity, crop, quality;
+exports.parse = function(query){
+  var mods, gravity, crop, quality;
 
   gravity   = getModifier('g');
   crop      = getModifier('c');
   quality   = getModifier('q');
-  segments  = requestUrl.replace(/^\//,'').split('/');
-  modStr    = _.first(segments);
-  image     = _.last(segments).toLowerCase();
-  namedMods = typeof namedMods === 'undefined' ? namedModifierMap : namedMods;
-
 
   // set the mod keys and defaults
   mods = {
@@ -317,33 +304,7 @@ exports.parse = function(requestUrl, namedMods, envOverride){
     hasModStr: false
   };
 
-  // check the request to see if it includes a named modifier
-  if (namedMods && !_.isEmpty(namedMods)){
-    if (_.has(namedMods, modStr)){
-      _.forEach(namedMods[modStr], function(value, key){
-        if (key === 'square'){
-          mods.action = 'square';
-          mods.height = value;
-          mods.width = value;
-        } else {
-          mods[key] = value;
-        }
-      });
-    }
-  }
-
-  // check the request for available modifiers, unless we are restricting to
-  // only named modifiers.
-  if (!env.NAMED_MODIFIERS_ONLY) {
-    mods = parseModifiers(mods, modStr.split('-'));
-  }
-
-
-  // check to see if this a metadata call, it trumps all other requested mods
-  if (image.slice(-5) === '.json'){
-    mods.action = 'json';
-    return mods;
-  }
+  mods = parseModifiers(query || {}, mods);
 
   if (mods.action === 'square'){
     // make sure crop is set to the default

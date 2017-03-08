@@ -23,7 +23,7 @@ util.inherits(Vimeo, stream.Readable);
 
 Vimeo.prototype._read = function(){
   var _this = this,
-      url, videoId;
+      videoId;
 
   if ( this.ended ){ return; }
 

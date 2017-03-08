@@ -11,8 +11,7 @@ var express = require('express'),
     ir = require('./index'),
     env = ir.env,
     Img = ir.img,
-    streams = ir.streams,
-    chalk = require('chalk');
+    streams = ir.streams;
 
 app.directory = __dirname;
 ir.expressConfig(app);

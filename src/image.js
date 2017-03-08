@@ -32,12 +32,6 @@ function Image(request){
   // set a mark for the start of the process
   this.mark = Date.now();
 
-  // determine the name and format (mime) of the requested image
-  this.parseImage(request);
-
-  // determine the requested modifications
-  this.modifiers = modifiers.parse(request.path);
-
   // pull the various parts needed from the request params
   this.parseUrl(request);
 
@@ -57,53 +51,11 @@ function Image(request){
 Image.validInputFormats  = ['jpeg', 'jpg', 'png', 'webp', 'tiff', 'tif', 'gif'];
 Image.validOutputFormats = ['jpeg', 'png', 'webp'];
 
-// Determine the name and format of the requested image
-Image.prototype.parseImage = function(request){
-  var fileStr = _.last(request.path.split('/'));
-  var exts = fileStr.split('.').map( function (item) {
-    return item.toLowerCase();
-  });
-
-  // clean out any metadata format
-  if (exts[exts.length - 1] === 'json') {
-    this.format = exts[exts.length - 2];
-    exts.pop();
-    fileStr = exts.join('.');
-  }
-
-  // if path contains valid output format, remove it from path
-  if (exts.length >= 3) {
-    var inputFormat = exts[exts.length - 2];
-    var outputFormat = exts.pop();
-
-    if (_.indexOf(Image.validInputFormats, inputFormat) > -1 &&
-        _.indexOf(Image.validOutputFormats, outputFormat) > -1) {
-      this.outputFormat = outputFormat;
-      fileStr = exts.join('.');
-    }
-  }
-
-  this.image  = fileStr;
-};
-
-
-// Determine the file path for the requested image
+// Parse tu URL to get all parameters : modifiers, sources and format
 Image.prototype.parseUrl = function(request){
-  var parts = request.path.replace(/^\//,'').split('/');
-
-  // overwrite the image name with the parsed version so metadata requests do
-  // not mess things up
-  parts[parts.length - 1] = this.image;
-
-  // if there is a modifier string remove it
-  if (this.modifiers.hasModStr) {
-    parts.shift();
-  }
-
-  this.path = parts.join('/');
-
-  // account for any spaces in the path
-  this.path = decodeURI(this.path);
+  this.image = request.query.source;
+  this.outputFormat = request.query.output || 'jpeg';
+  this.modifiers = modifiers.parse(request.query);
 };
 
 
