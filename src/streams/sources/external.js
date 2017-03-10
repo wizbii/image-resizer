@@ -2,13 +2,14 @@
 
 'use strict';
 
-var env, string, stream, util, request;
+var env, string, stream, util, request, url;
 
 env    = require('../../config/environment_vars');
 string  = require('../../utils/string');
 stream  = require('stream');
 util    = require('util');
 request = require('request');
+url     = require('url');
 
 function contentLength(bufs){
   return bufs.reduce(function(sum, buf){
@@ -26,6 +27,7 @@ function External(image, url){
 util.inherits(External, stream.Readable);
 
 External.prototype._read = function(){
+  const DEFAULT_IMAGE = "https://images.wizbii.com/foo";
   var _this = this,
     imgStream,
     bufs = [];
@@ -46,9 +48,14 @@ External.prototype._read = function(){
       'User-Agent': env.USER_AGENT
     }
   };
-  if (!this.url) {
-    options.url = "https://images.wizbii.com/foo";
+  if (!options.url) {
+    options.url = DEFAULT_IMAGE;
   }
+  var uri = url.parse(options.url);
+  if (uri.protocol !== "http:" && uri.protocol !== "https:") {
+    options.url = DEFAULT_IMAGE;
+  }
+
   imgStream = request.get(options);
   imgStream.on('data', function(d){ bufs.push(d); });
   imgStream.on('error', function(err){
@@ -76,3 +83,4 @@ External.prototype._read = function(){
 
 
 module.exports = External;
+
